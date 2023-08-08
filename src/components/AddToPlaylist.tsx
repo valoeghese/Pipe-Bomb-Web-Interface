@@ -39,6 +39,15 @@ const AddToPlaylist = React.memo(function AddToPlaylist() {
         isAdded: false
     });
 
+    const addNotificationTranslation = useTranslation("components.addToPlaylist.notifications.added");
+    const failedNotificationTranslation = useTranslation("components.addToPlaylist.notifications.failed");
+    const lastTrackButtonAddTranslation = useTranslation("components.addToPlaylist.lastTrackButton.add");
+    const addedTranslation = useTranslation("components.addToPlaylist.lastTrackButton.added");
+    const errorTranslation = useTranslation("components.addToPlaylist.lastTrackButton.error");
+    const playlistsTranslation = useTranslation("common.loader.playlists");
+    const titleTranslation = useTranslation("components.addToPlaylist.title");
+    const newPlaylistTranslation = useTranslation("buttons.newPlaylist");
+
     openModal = () => {
         setLastTrackButton({
             playlistID: "",
@@ -76,11 +85,11 @@ const AddToPlaylist = React.memo(function AddToPlaylist() {
                     trackName = (await selectedTrack.loadMetadata()).title;
                 }
                 createNotification({
-                    text: useTranslation("components.addToPlaylist.notifications.added", trackName, playlist.getName())
+                    text: addNotificationTranslation.resolve(trackName, playlist.getName())
                 });
                 setLastTrackButton({
                     playlistID: playlist.collectionID,
-                    value: useTranslation("components.addToPlaylist.lastTrackButton.added"),
+                    value: addedTranslation.resolve(),
                     isAdded: true
                 });
             }).catch(async (error: any) => {
@@ -90,11 +99,11 @@ const AddToPlaylist = React.memo(function AddToPlaylist() {
                     trackName = (await selectedTrack.loadMetadata()).title;
                 }
                 createNotification({
-                    text: useTranslation("components.addToPlaylist.notifications.failed", trackName, playlist.getName())
+                    text: failedNotificationTranslation.resolve(trackName, playlist.getName())
                 });
                 setLastTrackButton({
                     playlistID: playlist.collectionID,
-                    value: useTranslation("components.addToPlaylist.lastTrackButton.error"),
+                    value: errorTranslation.resolve(),
                     isAdded: false
                 });
             });
@@ -102,23 +111,23 @@ const AddToPlaylist = React.memo(function AddToPlaylist() {
     }
 
     function generatePlaylistHTML() {
-        if (!playlists) return <Loader text={useTranslation("common.loader.playlists") as string} />;
+        if (!playlists) return <Loader text={playlistsTranslation.resolve() as string} />;
 
         return playlists.map(playlist => (
             <div key={playlist.collectionID} className={styles.playlist}>
                 <Text className={styles.name} h3>{playlist.getName()}</Text>
-                <Button className={styles.add} color="secondary" auto onPress={() => addToPlaylist(playlist.collectionID)} disabled={lastTrackButton.playlistID == playlist.collectionID}>{lastTrackButton.playlistID == playlist.collectionID ? lastTrackButton.value : useTranslation("components.addToPlaylist.lastTrackButton.add")}</Button>
+                <Button className={styles.add} color="secondary" auto onPress={() => addToPlaylist(playlist.collectionID)} disabled={lastTrackButton.playlistID == playlist.collectionID}>{lastTrackButton.playlistID == playlist.collectionID ? lastTrackButton.value : lastTrackButtonAddTranslation.resolve()}</Button>
             </div>
         ));
     }
 
     return (
         <>
-            <CustomModal visible={visible} onClose={() => setVisible(false)} title={useTranslation("components.addToPlaylist.title") as string}>
+            <CustomModal visible={visible} onClose={() => setVisible(false)} title={titleTranslation.resolve() as string}>
                 { generatePlaylistHTML() }
                 <Grid.Container justify="flex-end">
                     <Grid>
-                        <Button onPress={() => openCreatePlaylist(selectedTrack || undefined)} bordered auto>{useTranslation("buttons.newPlaylist")}</Button>
+                        <Button onPress={() => openCreatePlaylist(selectedTrack || undefined)} bordered auto>{newPlaylistTranslation.resolve()}</Button>
                     </Grid>
                 </Grid.Container>
             </CustomModal>

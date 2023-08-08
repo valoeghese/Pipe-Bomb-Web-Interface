@@ -1,6 +1,6 @@
 import Language from "./Language";
 import axios from 'axios';
-import { ReactNode, isValidElement, cloneElement } from "react";
+import Translation from "./Translation";
 
 // Interface for structure of the language metadata file
 interface LanguageMeta {
@@ -142,54 +142,14 @@ export function loadLanguage(language: string) : Language {
 }
 
 /**
- * Localise the given translation key to the current language.
- * @param key the translation key to localise.
- * @param args the args to substitute for {%d} instances in the localisation.
- * @returns the localisation for the given translation key, searching first in the current language, falling back on the default language, and finally using the translation key
- * if no translation is found.
+ * Create a translation object with the localisation template corresponding to the key in the current language.
+ * Searches first in the current language, falling back on the default language, and finally using the translation key if no translation is found in either.
+ * @param key the translation key to look up.
+ * @returns a new translation object to act as a template for the translation in the current language.
+ * This can then be resolved by specifying the args in {@link Translation.resolve}
  */
-export function localise(key: string, args: ReactNode[]): ReactNode[] {
-	let localisedTemplate : string = currentLanguage.localise(key) ?? defaultLanguage.localise(key) ?? key;
-	
-	// Insert Args
-	// First, get the args in order that they are present in the template.
-	let indicesToArg : Map<number, ReactNode> = new Map();
-
-	for (let i = 0; i < args.length; i++) {
-		let index = localisedTemplate.indexOf(`{${i}}`);
-		
-		if (index > -1) {
-			indicesToArg.set(index, args[i]);
-		}
-	}
-
-	let orderedIndices = [...indicesToArg.keys()].sort();
-	let split = localisedTemplate.split(/{\d+}/);
-	let components : ReactNode[] = [];
-
-	// add parts of the split with the args added between components
-	for (let i = 0; i < split.length; i++) {
-		// append literal, filtering out blank strings that would just become empty spans
-		let literal = split[i];
-		
-		if (literal.length > 0) {
-			components.push(literal);
-		}
-		
-		// append arg
-		if (i < orderedIndices.length) {
-			let index = orderedIndices[i];
-			let arg : ReactNode = indicesToArg.get(index);
-			
-			if (isValidElement(arg)) {
-				components.push(cloneElement(arg, { key: "arg_" + i }));
-			} else {
-				components.push(arg);
-			}
-		}
-	}
-
-	return components;
+export function localise(key: string): Translation {
+	return new Translation(currentLanguage.localise(key) ?? defaultLanguage.localise(key) ?? key);
 }
 
 export function registerLanguageChangeListener(listener: LanguageChangeListener): void {
